@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>破孩奔月 · 无敌版</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #10141c; color: #dfe6f0;
+               font-family: "Microsoft YaHei", system-ui, sans-serif; }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 16px 14px 40px; }
+  h1 { font-size: 22px; margin: 6px 0 2px; }
+  h1 small { font-size: 13px; color: #f0b04b; font-weight: normal; margin-left: 10px; }
+  .meta { font-size: 13px; color: #8fa3bd; margin-bottom: 12px; line-height: 1.7; }
+  #stage { width: 100%; aspect-ratio: 550 / 440; background: #000;
+           border-radius: 10px; overflow: hidden; box-shadow: 0 6px 30px rgba(0,0,0,.5); }
+  #container { width: 100%; height: 100%; }
+  #container ruffle-player { width: 100%; height: 100%; }
+
+  #loadTip { position: absolute; inset: 0; display: flex; flex-direction: column;
+             align-items: center; justify-content: center; gap: 10px;
+             background: #000; z-index: 5; pointer-events: none; }
+  #loadTip .bar { width: 120px; height: 4px; border-radius: 2px;
+                  background: rgba(255,255,255,.12); overflow: hidden; }
+  #loadTip .bar i { display: block; height: 100%; width: 40%; border-radius: 2px;
+                    background: #5b8cff; animation: ldmove 1.1s ease-in-out infinite; }
+  @keyframes ldmove { 0% { transform: translateX(-100%);} 100% { transform: translateX(320%);} }
+  #loadTip p { color: #8fa3bd; font-size: 13px; margin: 0; line-height: 1.8; }
+  #jumpBadge { position: absolute; top: 8px; right: 10px; z-index: 5;
+    background: rgba(20,26,40,.7); color: #8fd3ff; border: 1px solid rgba(120,180,255,.4);
+    border-radius: 8px; padding: 4px 10px; font-size: 13px; pointer-events: none; }
+  .toolbar { display: flex; gap: 8px; margin: 10px 0 6px; }
+  .toolbar button {
+    background: #1c2433; color: #dfe6f0; border: 1px solid #2c3a52; border-radius: 8px;
+    padding: 8px 14px; font-size: 14px; cursor: pointer;
+  }
+  .tips { margin-top: 12px; font-size: 13px; color: #8fa3bd; line-height: 1.9;
+          background: #171d29; border-radius: 8px; padding: 12px 16px; }
+  .tips b { color: #dfe6f0; }
+  .cheat { border: 1px solid #6b5321; background: #221b10; }
+  .cheat b { color: #f0b04b; }
+  kbd { background: #232d42; border: 1px solid #33415e; border-bottom-width: 2px;
+        border-radius: 5px; padding: 1px 7px; font-size: 12px; color: #dfe6f0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>破孩奔月<small>无敌版 · 键盘操作</small></h1>
+  <div class="meta">
+    剧情：小丫被老鹰叼上月亮，小破孩奔月营救。手机玩无敌版请用
+    <a href="#" style="color:#5b8cff">手柄无敌版</a>，
+    原版在 <a href="#" style="color:#5b8cff">电脑版</a>。
+  </div>
+
+  <div id="stage"><div id="container"></div><div id="loadTip"><div class="bar"><i></i></div><p>首次加载约需 10~60 秒（5MB 模拟器内核 + 1.2MB 游戏）<br>加载一次后浏览器会缓存，下次秒开</p></div></div>
+
+
+  <div class="toolbar">
+    <button id="fsBtn" type="button">⛶ 全屏</button>
+  </div>
+
+  <div class="tips cheat">
+    <b>无敌模式已开启</b>：无限鞭炮 · 无限天外飞仙（夜明珠恒 99）· 生命恒满 · 老鹰攻击无效。<br>
+    点"开始游戏"后选难度、点"确定"进入游戏，无敌即自动生效。<br><br>
+    <b>卡住/幻影急救</b>：按 <kbd>Z</kbd> 强制回到静止的云上并解锁；<b>按住 Z 1.5 秒</b>直接重开本关。<br>
+    <b>操作方法</b>（点一下游戏画面即可用键盘）：<br>
+    <kbd>←</kbd> <kbd>→</kbd> 移动　<kbd>↑</kbd> 跳跃　<kbd>↓</kbd> 下落　<kbd>空格</kbd> 扔炮炮（无限）<br>
+    组合技：<kbd>↑</kbd>+<kbd>↓</kbd> 跳时下落　<kbd>←</kbd>+<kbd>→</kbd>+<kbd>↓</kbd> 天外飞仙（无限）　<kbd>回车</kbd> 确认/再来一次<br>
+    游戏菜单（跳过动画 / 开始游戏 / 难度设置）用鼠标点击。
+  </div>
+</div>
+<script>
+  window.RufflePlayer = window.RufflePlayer || {};
+  window.RufflePlayer.config = {
+    autoplay: "on",
+    unmuteOverlay: "visible",
+    letterbox: "on",
+    contextMenu: "on",
+    logLevel: "warn",   // warn 才能看到 fscommand 回读倍率
+  };
+</script>
+<script src="ruffle/ruffle.js"></script>
+<script>
+(function () {
+  var player;
+  function ensureFocus() {
+    var host = document.querySelector("ruffle-player");
+    if (!host) return;
+    try {
+      if (!host.hasAttribute("tabindex")) host.setAttribute("tabindex", "0");
+      if (document.activeElement !== host) host.focus();
+    } catch (e) {}
+  }
+  /* ↑ 键单发：按住上键只跳一次（原版按住会连跳、音效刷屏）。
+   * 原理：window 捕获阶段拦下真实 ↑ 键（含自动重复），改发一次合成 keydown，
+   * 220ms 后自动 keyup；↑+←/→ 同按不受影响（方向键直通）。 */
+  (function upOneShot() {
+    var latched = false, synthetic = false;
+    function sendSynthetic(type) {
+      var host = document.querySelector("ruffle-player");
+      if (!host) return;
+      var inner = host.shadowRoot ? host.shadowRoot.querySelector("div") : null;
+      [inner, host].forEach(function (t) {
+        if (!t) return;
+        var ev = new KeyboardEvent(type, { key: "ArrowUp", code: "ArrowUp", bubbles: true, cancelable: true });
+        try {
+          Object.defineProperty(ev, "keyCode", { get: function () { return 38; } });
+          Object.defineProperty(ev, "which",   { get: function () { return 38; } });
+        } catch (e) {}
+        synthetic = true;
+        t.dispatchEvent(ev);
+        synthetic = false;
+      });
+    }
+    window.addEventListener("keydown", function (e) {
+      if (synthetic || e.key !== "ArrowUp") return;
+      e.preventDefault(); e.stopPropagation();
+      if (e.repeat || latched) return;
+      latched = true;
+      sendSynthetic("keydown");
+      setTimeout(function () { sendSynthetic("keyup"); latched = false; }, 220);
+    }, true);
+    window.addEventListener("keyup", function (e) {
+      if (synthetic || e.key !== "ArrowUp") return;
+      e.preventDefault(); e.stopPropagation();
+    }, true);
+  })();
+
+  (function () {
+    var el = document.getElementById("jumpBadge");
+    function show(v) { el.textContent = "跳跃 ×" + v + "（X调高 / C调低 / V重置）"; }
+    var orig = console.warn ? console.warn.bind(console) : function () {};
+    console.warn = function () {
+      try {
+        var s = Array.prototype.map.call(arguments, String).join(" ");
+        var m2 = s.match(/JUMPMULT=([\d.]+)/);
+        if (m2 && el) show(m2[1]);
+      } catch (err) {}
+      orig.apply(null, arguments);
+    };
+  })();
+
+  window.addEventListener("load", function () {
+    var ruffle = window.RufflePlayer.newest();
+    player = ruffle.createPlayer();
+    document.getElementById("container").appendChild(player);
+    // 无敌版：加载的是 loader（内部再载游戏本体并每帧锁资源）
+    player.load("loader_cheat.swf?v=31");
+    setTimeout(ensureFocus, 600);
+    setTimeout(ensureFocus, 2000);
+  });
+  document.getElementById("stage").addEventListener("pointerdown", ensureFocus);
+  document.getElementById("fsBtn").addEventListener("click", function () {
+    var el = document.getElementById("stage");
+    if (document.fullscreenElement) { document.exitFullscreen(); }
+    else if (el.requestFullscreen) { el.requestFullscreen().catch(function(){}); }
+  });
+
+  /* 加载提示：canvas 挂载后隐藏 */
+  (function () {
+    var tip = document.getElementById("loadTip");
+    if (!tip) return;
+    var iv = setInterval(function () {
+      var rp = document.querySelector("ruffle-player");
+      if (rp && rp.shadowRoot && rp.shadowRoot.querySelector("canvas")) {
+        tip.style.display = "none";
+        clearInterval(iv);
+      }
+    }, 400);
+  })();
+})();
+</script>
+</body>
+</html>
